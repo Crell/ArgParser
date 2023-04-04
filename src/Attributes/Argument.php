@@ -29,6 +29,10 @@ class Argument implements FromReflectionProperty
 
     public readonly DefaultValue $default;
 
+    public function __construct(
+        public readonly ?string $shortName = null,
+    ) {}
+
     public function fromReflection(\ReflectionProperty $subject): void
     {
         $this->phpName = $subject->name;

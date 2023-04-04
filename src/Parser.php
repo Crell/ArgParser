@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Crell\ArgParser;
 
+use Crell\ArgParser\Attributes\Argument;
 use Crell\ArgParser\Attributes\ArgumentDefinition;
 use Crell\AttributeUtils\Analyzer;
 use Crell\AttributeUtils\ClassAnalyzer;
 
 class Parser
 {
-
     public function __construct(
         private readonly ClassAnalyzer $analyzer = new Analyzer(),
     ) {}
@@ -33,6 +33,8 @@ class Parser
 
         $args = $this->parseArgv($argv);
 
+        $args = $this->translateShortNames($args, $def);
+
         $excessArgs = array_diff(array_keys($args), array_keys($def->arguments));
         if (count($excessArgs)) {
             throw new \InvalidArgumentException('Too many args');
@@ -43,6 +45,19 @@ class Parser
         $obj = $this->createObject($to, $args, []);
 
         return $obj;
+    }
+
+    private function translateShortNames(array $args, ArgumentDefinition $def): array
+    {
+        // @todo Why is this not getting picked up automatically?
+        /** @var Argument $argument */
+        foreach ($def->arguments as $argument) {
+            if ($argument->shortName && array_key_exists($argument->shortName, $args)) {
+                $args[$argument->phpName] = $args[$argument->shortName];
+                unset($args[$argument->shortName]);
+            }
+        }
+        return $args;
     }
 
     private function parseArgv(array $argv): array
@@ -69,9 +84,19 @@ class Parser
 
                 $ret[$name] = $value;
             } elseif (str_starts_with($argv[$i], '-')) {
-                // It's a short-form argument.
+                $name = substr($argv[$i], 1);
+
+                if (str_contains($argv[$i], '=')) {
+                    [$name, $value] = \explode('=', $argv[$i]);
+                    $name = substr($name, 1);
+                } else {
+                    $name = substr($name, 1);
+                    $value = null;
+                }
+                $ret[$name] = $value;
             } else {
-                // It's a bare argument?
+                $name = substr($name, 2);
+                $ret[$name] = null;
             }
             $i++;
         }

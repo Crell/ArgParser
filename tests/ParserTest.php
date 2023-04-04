@@ -34,9 +34,15 @@ class ParserTest extends TestCase
 
     public function exampleSuccessArgs(): iterable
     {
-        yield [
+        yield 'basic long-name parameter' => [
             'argc' => 1,
-            'argv' => ['script.php', '--a=A'],
+            'argv' => ['script.php', '--about=A'],
+            'class' => Basic::class,
+            'expected' => new Basic('A'),
+        ];
+        yield 'basic short-name parameter' => [
+            'argc' => 1,
+            'argv' => ['script.php', '-a=A'],
             'class' => Basic::class,
             'expected' => new Basic('A'),
         ];
@@ -45,7 +51,7 @@ class ParserTest extends TestCase
     {
         yield [
             'argc' => 1,
-            'argv' => ['script.php', '--a=A', '--C'],
+            'argv' => ['script.php', '--about=A', '--C'],
             'class' => Basic::class,
             'expectedException' => \InvalidArgumentException::class,
         ];

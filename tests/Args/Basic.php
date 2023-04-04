@@ -9,8 +9,8 @@ use Crell\ArgParser\Attributes\Argument;
 class Basic
 {
     public function __construct(
-        #[Argument]
-        public readonly string $a,
+        #[Argument(shortName: 'a')]
+        public readonly string $about,
         #[Argument]
         public readonly string $b = 'B',
     ) {}
