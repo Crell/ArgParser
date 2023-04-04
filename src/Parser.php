@@ -68,13 +68,12 @@ class Parser
         while ($i < count($argv)) {
             if (str_starts_with($argv[$i], '--')) {
                 // It's a long-form argument.
-                $name = substr($argv[$i], 2);
+                $entry = substr($argv[$i], 2);
 
                 if (str_contains($argv[$i], '=')) {
-                    [$name, $value] = \explode('=', $argv[$i]);
-                    $name = substr($name, 2);
+                    [$name, $value] = \explode('=', $entry);
                 } else {
-                    $name = substr($name, 2);
+                    $name = $entry;
                     $value = null;
                 }
 
@@ -84,19 +83,19 @@ class Parser
 
                 $ret[$name] = $value;
             } elseif (str_starts_with($argv[$i], '-')) {
-                $name = substr($argv[$i], 1);
+                // It's a short-form argument.
+                $entry = substr($argv[$i], 1);
 
                 if (str_contains($argv[$i], '=')) {
-                    [$name, $value] = \explode('=', $argv[$i]);
-                    $name = substr($name, 1);
+                    [$name, $value] = \explode('=', $entry);
                 } else {
-                    $name = substr($name, 1);
+                    $name = $entry;
                     $value = null;
                 }
+
                 $ret[$name] = $value;
             } else {
-                $name = substr($name, 2);
-                $ret[$name] = null;
+                // @todo Figure out what to do here.
             }
             $i++;
         }
