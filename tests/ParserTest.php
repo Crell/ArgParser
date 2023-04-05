@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Crell\ArgParser;
 
 use Crell\ArgParser\Args\Basic;
+use Crell\ArgParser\Args\Multivalue;
 use PHPUnit\Framework\TestCase;
 
 class ParserTest extends TestCase
@@ -45,6 +46,12 @@ class ParserTest extends TestCase
             'argv' => ['script.php', '-a=A'],
             'class' => Basic::class,
             'expected' => new Basic('A'),
+        ];
+        yield 'multi-value long parameter' => [
+            'argc' => 3,
+            'argv' => ['script.php', '--file=A', '--file=B'],
+            'class' => Multivalue::class,
+            'expected' => new Multivalue(['A', 'B']),
         ];
     }
     public function exampleErrorArgs(): iterable

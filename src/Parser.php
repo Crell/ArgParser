@@ -70,30 +70,20 @@ class Parser
                 // It's a long-form argument.
                 $entry = substr($argv[$i], 2);
 
-                if (str_contains($argv[$i], '=')) {
-                    [$name, $value] = \explode('=', $entry);
-                } else {
-                    $name = $entry;
-                    $value = null;
-                }
+                [$name, $value] = $this->getNameValue($entry);
 
                 // If the next arg exists and is not a new switch (denoted by -), assume it is a value for this argument.
                 //$value = !str_starts_with($argv[$i + 1] ?? '', '-') ? $argv[$i + 1] : null;
                 // $i++;
 
-                $ret[$name] = $value;
+                $ret = $this->updateResult($ret, $name, $value);
             } elseif (str_starts_with($argv[$i], '-')) {
                 // It's a short-form argument.
                 $entry = substr($argv[$i], 1);
 
-                if (str_contains($argv[$i], '=')) {
-                    [$name, $value] = \explode('=', $entry);
-                } else {
-                    $name = $entry;
-                    $value = null;
-                }
+                [$name, $value] = $this->getNameValue($entry);
 
-                $ret[$name] = $value;
+                $ret = $this->updateResult($ret, $name, $value);
             } else {
                 // @todo Figure out what to do here.
             }
@@ -101,6 +91,29 @@ class Parser
         }
 
         return $ret;
+    }
+
+    private function updateResult(array $ret, string $name, mixed $value): array
+    {
+        if (isset($ret[$name])) {
+            if (is_array($ret[$name])) {
+                $ret[$name][] = $value;
+            } else {
+                $ret[$name] = [$ret[$name], $value];
+            }
+        } else {
+            $ret[$name] = $value;
+        }
+        return $ret;
+    }
+
+    private function getNameValue(string $value): array
+    {
+        if (str_contains($value, '=')) {
+            return \explode('=', $value);
+        } else {
+            return [$value, null];
+        }
     }
 
     private function createObject(string $class, array $props, array $callbacks): object
