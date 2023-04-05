@@ -2,7 +2,7 @@
     "name": "crell/argparser",
     "require": {
         "php": "~8.1",
-        "crell/attributeutils": "^0.8.1",
+        "crell/attributeutils": "^0.8.2",
         "crell/fp": "^0.4.0"
     },
     "require-dev": {
