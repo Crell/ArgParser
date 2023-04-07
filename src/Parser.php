@@ -13,10 +13,11 @@ class Parser
 {
     public function __construct(
         private readonly ClassAnalyzer $analyzer = new Analyzer(),
+        private readonly ArgNormalizer $argNormalizer = new ArgNormalizer(),
     ) {}
 
     /**
-     *
+     * Translates an $argv array to a defined class.
      *
      * @param array $argv
      *   The array of CLI arguments, as PHP defines it in $argv.
@@ -31,7 +32,7 @@ class Parser
 
         $scriptName = array_shift($argv);
 
-        $args = $this->parseArgv($argv);
+        $args = $this->argNormalizer->parseArgv($argv);
 
         $args = $this->translateShortNames($args, $def);
 
@@ -47,7 +48,7 @@ class Parser
         return $obj;
     }
 
-    private function translateShortNames(array $args, ArgumentDefinition $def): array
+    public function translateShortNames(array $args, ArgumentDefinition $def): array
     {
         // @todo Why is this not getting picked up automatically?
         /** @var Argument $argument */
@@ -58,62 +59,6 @@ class Parser
             }
         }
         return $args;
-    }
-
-    private function parseArgv(array $argv): array
-    {
-        $ret = [];
-
-        $i = 0;
-        while ($i < count($argv)) {
-            if (str_starts_with($argv[$i], '--')) {
-                // It's a long-form argument.
-                $entry = substr($argv[$i], 2);
-
-                [$name, $value] = $this->getNameValue($entry);
-
-                // If the next arg exists and is not a new switch (denoted by -), assume it is a value for this argument.
-                //$value = !str_starts_with($argv[$i + 1] ?? '', '-') ? $argv[$i + 1] : null;
-                // $i++;
-
-                $ret = $this->updateResult($ret, $name, $value);
-            } elseif (str_starts_with($argv[$i], '-')) {
-                // It's a short-form argument.
-                $entry = substr($argv[$i], 1);
-
-                [$name, $value] = $this->getNameValue($entry);
-
-                $ret = $this->updateResult($ret, $name, $value);
-            } else {
-                // @todo Figure out what to do here.
-            }
-            $i++;
-        }
-
-        return $ret;
-    }
-
-    private function updateResult(array $ret, string $name, mixed $value): array
-    {
-        if (isset($ret[$name])) {
-            if (is_array($ret[$name])) {
-                $ret[$name][] = $value;
-            } else {
-                $ret[$name] = [$ret[$name], $value];
-            }
-        } else {
-            $ret[$name] = $value;
-        }
-        return $ret;
-    }
-
-    private function getNameValue(string $value): array
-    {
-        if (str_contains($value, '=')) {
-            return \explode('=', $value);
-        } else {
-            return [$value, null];
-        }
     }
 
     private function createObject(string $class, array $props, array $callbacks): object
