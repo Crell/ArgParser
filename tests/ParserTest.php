@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Crell\ArgParser;
 
 use Crell\ArgParser\Args\Basic;
+use Crell\ArgParser\Args\Missing;
 use Crell\ArgParser\Args\Multivalue;
 use Crell\ArgParser\Args\Typed;
 use PHPUnit\Framework\TestCase;
@@ -86,6 +87,7 @@ class ParserTest extends TestCase
             'class' => Typed::class,
             'expectedException' => TypeMismatch::class,
         ];
+
         yield 'array into int' => [
             'argv' => ['script.php', '--int=5', '--int=7'],
             'class' => Typed::class,
@@ -96,6 +98,12 @@ class ParserTest extends TestCase
             'argv' => ['script.php', '-i=5', '--int=7'],
             'class' => Typed::class,
             'expectedException' => LongAndShortArgumentUsed::class,
+        ];
+
+        yield 'missing required argument' => [
+            'argv' => ['script.php'],
+            'class' => Missing::class,
+            'expectedException' => MissingArgument::class,
         ];
     }
 }
