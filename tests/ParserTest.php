@@ -72,6 +72,11 @@ class ParserTest extends TestCase
             'class' => Typed::class,
             'expected' => new Typed(5, '3.14', 2.0, ['val']),
         ];
+        yield 'default values are used' => [
+            'argv' => ['script.php'],
+            'class' => Typed::class,
+            'expected' => new Typed(),
+        ];
     }
 
     public function exampleErrorArgs(): iterable
