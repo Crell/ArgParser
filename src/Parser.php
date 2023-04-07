@@ -79,17 +79,16 @@ class Parser
             $populator->call($new, $argument->phpName, $val);
         }
 
-        $methodCaller = fn(string $fn) => $this->$fn();
-
         // Invoke any post-load callbacks, even if they're private.
+        $methodCaller = fn(string $fn) => $this->$fn();
         $invoker = $methodCaller->bindTo($new, $new);
         // bindTo() technically could return null on error, but there's no
         // indication of when that would happen. So this is really just to
         // keep static analyzers happy.
         if ($invoker) {
-//            foreach ($def->postLoad as $fn) {
-//                $invoker($fn);
-//            }
+            foreach ($def->postLoad as $fn) {
+                $invoker($fn);
+            }
         }
 
         return $new;

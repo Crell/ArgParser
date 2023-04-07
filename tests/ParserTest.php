@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Crell\ArgParser;
 
 use Crell\ArgParser\Args\Basic;
+use Crell\ArgParser\Args\Callback;
 use Crell\ArgParser\Args\Missing;
 use Crell\ArgParser\Args\Multivalue;
 use Crell\ArgParser\Args\Typed;
@@ -76,6 +77,12 @@ class ParserTest extends TestCase
             'argv' => ['script.php'],
             'class' => Typed::class,
             'expected' => new Typed(),
+        ];
+        yield 'beep' => [
+//        yield 'callbacks are called' => [
+            'argv' => ['script.php', '--a=3', '--b=4'],
+            'class' => Callback::class,
+            'expected' => new Callback(3, 4),
         ];
     }
 
