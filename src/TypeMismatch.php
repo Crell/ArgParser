@@ -6,7 +6,6 @@ namespace Crell\ArgParser;
 
 class TypeMismatch extends \InvalidArgumentException
 {
-
     public readonly string $name;
     public readonly string $expectedType;
     public readonly string $foundType;

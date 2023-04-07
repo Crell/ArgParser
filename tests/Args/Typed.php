@@ -9,7 +9,7 @@ use Crell\ArgParser\Attributes\Argument;
 class Typed
 {
     public function __construct(
-        #[Argument]
+        #[Argument(shortName: 'i')]
         public readonly int $int = 0,
         #[Argument]
         public readonly string $string = 'hello',

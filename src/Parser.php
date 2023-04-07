@@ -41,8 +41,6 @@ class Parser
             throw new \InvalidArgumentException('Too many args');
         }
 
-        $args += $def->getDefaults();
-
         return $this->createObject($to, $args, $def, []);
     }
 
@@ -52,6 +50,9 @@ class Parser
         /** @var Argument $argument */
         foreach ($def->arguments as $argument) {
             if ($argument->shortName && array_key_exists($argument->shortName, $args)) {
+                if (array_key_exists($argument->longName, $args)) {
+                    throw LongAndShortArgumentUsed::create($argument);
+                }
                 $args[$argument->longName] = $args[$argument->shortName];
                 unset($args[$argument->shortName]);
             }
@@ -59,7 +60,7 @@ class Parser
         return $args;
     }
 
-    private function createObject(string $class, array $args, ArgumentDefinition $def, array $callbacks): object
+    private function createObject(string $class, array $args, ArgumentDefinition $def): object
     {
         // Make an empty instance of the target class.
         $rClass = new \ReflectionClass($class);
@@ -72,8 +73,10 @@ class Parser
             if (array_key_exists(key: $argument->longName, array: $args)) {
                 // @Todo Figure out array count mismatches.
                 $val = $this->typeNormalize($args[$argument->longName], $argument);
-                $populator->call($new, $argument->phpName, $val);
+            } else {
+                $val = $argument->default->value ?? throw MissingArgument::create($argument);
             }
+            $populator->call($new, $argument->phpName, $val);
         }
 
         $methodCaller = fn(string $fn) => $this->$fn();
@@ -84,9 +87,9 @@ class Parser
         // indication of when that would happen. So this is really just to
         // keep static analyzers happy.
         if ($invoker) {
-            foreach ($callbacks as $fn) {
-                $invoker($fn);
-            }
+//            foreach ($def->postLoad as $fn) {
+//                $invoker($fn);
+//            }
         }
 
         return $new;

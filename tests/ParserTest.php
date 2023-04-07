@@ -91,5 +91,11 @@ class ParserTest extends TestCase
             'class' => Typed::class,
             'expectedException' => TypeMismatch::class,
         ];
+
+        yield 'duplicate values in long vs short name' => [
+            'argv' => ['script.php', '-i=5', '--int=7'],
+            'class' => Typed::class,
+            'expectedException' => LongAndShortArgumentUsed::class,
+        ];
     }
 }
