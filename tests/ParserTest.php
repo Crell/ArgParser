@@ -61,6 +61,16 @@ class ParserTest extends TestCase
             'class' => Typed::class,
             'expected' => new Typed(5, 'world', 2.7, ['beep', 'boop']),
         ];
+        yield 'typed arguments with safe into-to-float handling' => [
+            'argv' => ['script.php', '--int=5', '--string=world', '--float=2', '--array=val'],
+            'class' => Typed::class,
+            'expected' => new Typed(5, 'world', 2.0, ['val']),
+        ];
+        yield 'typed arguments with safe float string handling' => [
+            'argv' => ['script.php', '--int=5', '--string=3.14', '--float=2', '--array=val'],
+            'class' => Typed::class,
+            'expected' => new Typed(5, '3.14', 2.0, ['val']),
+        ];
     }
 
     public function exampleErrorArgs(): iterable
@@ -69,6 +79,17 @@ class ParserTest extends TestCase
             'argv' => ['script.php', '--about=A', '--C'],
             'class' => Basic::class,
             'expectedException' => \InvalidArgumentException::class,
+        ];
+
+        yield 'float into int' => [
+            'argv' => ['script.php', '--int=5.5', '--float=2.7'],
+            'class' => Typed::class,
+            'expectedException' => TypeMismatch::class,
+        ];
+        yield 'array into int' => [
+            'argv' => ['script.php', '--int=5', '--int=7'],
+            'class' => Typed::class,
+            'expectedException' => TypeMismatch::class,
         ];
     }
 }
