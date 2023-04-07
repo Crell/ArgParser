@@ -6,6 +6,7 @@ namespace Crell\ArgParser;
 
 use Crell\ArgParser\Args\Basic;
 use Crell\ArgParser\Args\Multivalue;
+use Crell\ArgParser\Args\Typed;
 use PHPUnit\Framework\TestCase;
 
 class ParserTest extends TestCase
@@ -53,7 +54,20 @@ class ParserTest extends TestCase
             'class' => Multivalue::class,
             'expected' => new Multivalue(['A', 'B']),
         ];
+        yield 'typed arguments with only one array value' => [
+            'argc' => 5,
+            'argv' => ['script.php', '--int=5', '--string=world', '--float=2.7', '--array=val'],
+            'class' => Typed::class,
+            'expected' => new Typed(5, 'world', 2.7, ['val']),
+        ];
+        yield 'typed arguments with multiple array values' => [
+            'argc' => 5,
+            'argv' => ['script.php', '--int=5', '--string=world', '--float=2.7', '--array=beep', '--array=boop'],
+            'class' => Typed::class,
+            'expected' => new Typed(5, 'world', 2.7, ['beep', 'boop']),
+        ];
     }
+
     public function exampleErrorArgs(): iterable
     {
         yield [

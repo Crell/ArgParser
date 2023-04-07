@@ -27,14 +27,27 @@ class Argument implements FromReflectionProperty
      */
     public readonly string $phpName;
 
+    /**
+     * The argument name.
+     *
+     * This form will require a -- prefix.
+     */
+    public readonly string $longName;
+
     public readonly DefaultValue $default;
 
     public function __construct(
         public readonly ?string $shortName = null,
-    ) {}
+        ?string $longName = null,
+    ) {
+        if ($longName) {
+            $this->longName = $longName;
+        }
+    }
 
     public function fromReflection(\ReflectionProperty $subject): void
     {
+        $this->longName ??= $subject->name;
         $this->phpName = $subject->name;
         $typeDef = new TypeDef($subject->getType());
         if (!$typeDef->isSimple()) {

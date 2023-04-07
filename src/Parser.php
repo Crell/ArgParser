@@ -43,9 +43,7 @@ class Parser
 
         $args += $def->getDefaults();
 
-        $obj = $this->createObject($to, $args, []);
-
-        return $obj;
+        return $this->createObject($to, $args, $def, []);
     }
 
     public function translateShortNames(array $args, ArgumentDefinition $def): array
@@ -54,29 +52,31 @@ class Parser
         /** @var Argument $argument */
         foreach ($def->arguments as $argument) {
             if ($argument->shortName && array_key_exists($argument->shortName, $args)) {
-                $args[$argument->phpName] = $args[$argument->shortName];
+                $args[$argument->longName] = $args[$argument->shortName];
                 unset($args[$argument->shortName]);
             }
         }
         return $args;
     }
 
-    private function createObject(string $class, array $props, array $callbacks): object
+    private function createObject(string $class, array $args, ArgumentDefinition $def, array $callbacks): object
     {
         // Make an empty instance of the target class.
         $rClass = new \ReflectionClass($class);
         $new = $rClass->newInstanceWithoutConstructor();
 
-        $populator = function (array $props) {
-            foreach ($props as $k => $v) {
-                $this->$k = $v;
+        $populator = fn(string $prop, mixed $val) => $this->$prop = $val;
+
+        /** @var Argument $argument */
+        foreach ($def->arguments as $argument) {
+            if (array_key_exists(key: $argument->longName, array: $args)) {
+                // @Todo Figure out array count mismatches.
+                $val = $this->typeNormalize($args[$argument->longName], $argument);
+                $populator->call($new, $argument->phpName, $val);
             }
-        };
+        }
 
         $methodCaller = fn(string $fn) => $this->$fn();
-
-        // Call the populator with the scope of the new object.
-        $populator->call($new, $props);
 
         // Invoke any post-load callbacks, even if they're private.
         $invoker = $methodCaller->bindTo($new, $new);
@@ -92,4 +92,33 @@ class Parser
         return $new;
     }
 
+    /**
+     * Normalizes a scalar value to its most-restrictive type.
+     *
+     * CLI values are always imported as strings, but if we want to
+     * push them into well-typed fields we need to cast them
+     * appropriately.
+     *
+     * @param string $val
+     *   The value to normalize.
+     * @return int|float|string|bool
+     *   The passed value, but now with the correct type.
+     */
+    private function typeNormalize(string|array $val, Argument $argument): int|float|string|bool|array
+    {
+        return match ($argument->phpType) {
+            'string' => $val,
+            'float' => is_numeric($val)
+                ? (float) $val
+                : throw TypeMismatch::create($argument->longName, $argument->phpType, get_debug_type($val)),
+            'int' => (is_numeric($val) && floor((float) $val) === (float) $val)
+                ? (int) $val
+                : throw TypeMismatch::create($argument->longName, $argument->phpType, get_debug_type($val)),
+            'bool' => in_array(strtolower($val), [1, '1', 'true', 'yes', 'on'], false),
+            'array' => is_array($val)
+                ? $val
+                : [$val],
+            default => throw TypeMismatch::create($argument->longName, $argument->phpType, get_debug_type($val)),
+        };
+    }
 }
