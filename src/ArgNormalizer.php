@@ -57,6 +57,7 @@ class ArgNormalizer
             return \explode('=', $value);
         }
 
-        return [$value, null];
+        // Use boolean true to indicate that, yep, the switch was present.
+        return [$value, true];
     }
 }

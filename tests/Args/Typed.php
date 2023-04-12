@@ -17,5 +17,7 @@ class Typed
         public readonly float $float = 3.14,
         #[Argument]
         public readonly array $array = [],
+        #[Argument(shortName: 'd')]
+        public readonly bool $doit = false,
     ) {}
 }

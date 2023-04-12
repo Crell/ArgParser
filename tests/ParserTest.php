@@ -54,9 +54,9 @@ class ParserTest extends TestCase
             'expected' => new Multivalue(['A', 'B']),
         ];
         yield 'typed arguments with only one array value' => [
-            'argv' => ['script.php', '--int=5', '--string=world', '--float=2.7', '--array=val'],
+            'argv' => ['script.php', '--int=5', '--string=world', '--float=2.7', '--array=val', '--doit'],
             'class' => Typed::class,
-            'expected' => new Typed(5, 'world', 2.7, ['val']),
+            'expected' => new Typed(5, 'world', 2.7, ['val'], true),
         ];
         yield 'typed arguments with multiple array values' => [
             'argv' => ['script.php', '--int=5', '--string=world', '--float=2.7', '--array=beep', '--array=boop'],

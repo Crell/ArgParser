@@ -101,12 +101,14 @@ class Parser
      * push them into well-typed fields we need to cast them
      * appropriately.
      *
-     * @param string $val
+     * @param string|array|null $val
      *   The value to normalize.
-     * @return int|float|string|bool
+     * @param Argument $argument
+     *   The argument definition attribute.
+     * @return int|float|string|bool|array
      *   The passed value, but now with the correct type.
      */
-    private function typeNormalize(string|array $val, Argument $argument): int|float|string|bool|array
+    private function typeNormalize(string|array|bool $val, Argument $argument): int|float|string|bool|array
     {
         return match ($argument->phpType) {
             'string' => $val,
@@ -116,7 +118,11 @@ class Parser
             'int' => (is_numeric($val) && floor((float) $val) === (float) $val)
                 ? (int) $val
                 : throw TypeMismatch::create($argument->longName, $argument->phpType, get_debug_type($val)),
-            'bool' => in_array(strtolower($val), [1, '1', 'true', 'yes', 'on'], false),
+            'bool' => match (get_debug_type($val)) {
+                    'string' => in_array(strtolower($val), ['1', 'true', 'yes', 'on'], false),
+                    'int' => (bool) $val,
+                    'bool' => $val,
+                },
             'array' => is_array($val)
                 ? $val
                 : [$val],
