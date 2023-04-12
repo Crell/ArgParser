@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Crell\ArgParser;
 
+use Crell\ArgParser\Args\ABoolean;
 use Crell\ArgParser\Args\Basic;
 use Crell\ArgParser\Args\Callback;
 use Crell\ArgParser\Args\Missing;
@@ -88,6 +89,48 @@ class ParserTest extends TestCase
             'class' => Multivalue::class,
             'expected' => new Multivalue(['A', 'B']),
         ];
+
+        // The different kinds of boolean.
+
+        foreach (['1', 'true', 'yes', 'on'] as $val) {
+            yield "$val is true (long)" => [
+                'argv' => ['script.php', '--flag=' . $val],
+                'class' => ABoolean::class,
+                'expected' => new ABoolean(true),
+            ];
+
+            yield "$val is true (short)" => [
+                'argv' => ['script.php', '-f=' . $val],
+                'class' => ABoolean::class,
+                'expected' => new ABoolean(true),
+            ];
+        }
+        foreach (['0', 'false', 'no', 'off', 'nope', 'narf'] as $val) {
+            yield "$val is false (long)" => [
+                'argv' => ['script.php', '--flag=' . $val],
+                'class' => ABoolean::class,
+                'expected' => new ABoolean(false),
+            ];
+
+            yield "$val is false (short)" => [
+                'argv' => ['script.php', '-f=' . $val],
+                'class' => ABoolean::class,
+                'expected' => new ABoolean(false),
+            ];
+        }
+
+        yield 'just defined is true (long)' => [
+            'argv' => ['script.php', '--flag'],
+            'class' => ABoolean::class,
+            'expected' => new ABoolean(true),
+        ];
+
+        yield 'just defined is true (short)' => [
+            'argv' => ['script.php', '-f'],
+            'class' => ABoolean::class,
+            'expected' => new ABoolean(true),
+        ];
+
     }
 
     public function exampleErrorArgs(): iterable
