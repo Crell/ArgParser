@@ -38,7 +38,7 @@ class Parser
 
         $excessArgs = array_diff(array_keys($args), array_keys($def->arguments));
         if (count($excessArgs)) {
-            throw new \InvalidArgumentException('Too many args');
+            throw TooManyArguments::create($excessArgs);
         }
 
         return $this->createObject($to, $args, $def, []);

@@ -138,7 +138,7 @@ class ParserTest extends TestCase
         yield [
             'argv' => ['script.php', '--about=A', '--C'],
             'class' => Basic::class,
-            'expectedException' => \InvalidArgumentException::class,
+            'expectedException' => TooManyArguments::class,
         ];
 
         yield 'float into int' => [
