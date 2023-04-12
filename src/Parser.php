@@ -19,7 +19,11 @@ class Parser
     /**
      * Translates an $argv array to a defined class.
      *
-     * @param array $argv
+     * @todo PHPStan isn't recognizing the template here, even though
+     * it's the exact same syntax as used in AttributeUtils. I don't understand.
+     *
+     * @template T of object
+     * @param string[] $argv
      *   The array of CLI arguments, as PHP defines it in $argv.
      * @param class-string<T> $to
      *   The fully qualified class name of the argument class.
@@ -41,9 +45,14 @@ class Parser
             throw TooManyArguments::create($excessArgs);
         }
 
-        return $this->createObject($to, $args, $def, []);
+        return $this->createObject($to, $args, $def);
     }
 
+    /**
+     * @param array<string, string|array<string>|true> $args
+     * @param ArgumentDefinition $def
+     * @return array<string, string|array<string>|true>
+     */
     public function translateShortNames(array $args, ArgumentDefinition $def): array
     {
         // @todo Why is this not getting picked up automatically?
@@ -60,6 +69,13 @@ class Parser
         return $args;
     }
 
+    /**
+     * @param string $class
+     * @param array<string, string|array<string>|true> $args
+     * @param ArgumentDefinition $def
+     * @return object
+     * @throws \ReflectionException
+     */
     private function createObject(string $class, array $args, ArgumentDefinition $def): object
     {
         // Make an empty instance of the target class.
@@ -82,13 +98,8 @@ class Parser
         // Invoke any post-load callbacks, even if they're private.
         $methodCaller = fn(string $fn) => $this->$fn();
         $invoker = $methodCaller->bindTo($new, $new);
-        // bindTo() technically could return null on error, but there's no
-        // indication of when that would happen. So this is really just to
-        // keep static analyzers happy.
-        if ($invoker) {
-            foreach ($def->postLoad as $fn) {
-                $invoker($fn);
-            }
+        foreach ($def->postLoad as $fn) {
+            $invoker($fn);
         }
 
         return $new;
@@ -101,11 +112,11 @@ class Parser
      * push them into well-typed fields we need to cast them
      * appropriately.
      *
-     * @param string|array|null $val
+     * @param string|array<string>|bool $val
      *   The value to normalize.
      * @param Argument $argument
      *   The argument definition attribute.
-     * @return int|float|string|bool|array
+     * @return int|float|string|bool|array<string|int>
      *   The passed value, but now with the correct type.
      */
     private function typeNormalize(string|array|bool $val, Argument $argument): int|float|string|bool|array
@@ -118,14 +129,14 @@ class Parser
             'int' => (is_numeric($val) && floor((float) $val) === (float) $val)
                 ? (int) $val
                 : throw TypeMismatch::create($argument->longName, $argument->phpType, get_debug_type($val)),
+            'array' => is_array($val)
+                ? $val
+                : [$val],
             'bool' => match (get_debug_type($val)) {
                     'string' => in_array(strtolower($val), ['1', 'true', 'yes', 'on'], false),
                     'int' => (bool) $val,
                     'bool' => $val,
                 },
-            'array' => is_array($val)
-                ? $val
-                : [$val],
             default => throw TypeMismatch::create($argument->longName, $argument->phpType, get_debug_type($val)),
         };
     }

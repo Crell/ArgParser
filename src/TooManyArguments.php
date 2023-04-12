@@ -9,6 +9,10 @@ class TooManyArguments extends \InvalidArgumentException
     /** @var string[] */
     public readonly array $args;
 
+    /**
+     * @param string[] $args
+     * @return self
+     */
     public static function create(array $args): self
     {
         $new = new self();

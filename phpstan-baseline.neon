@@ -1,0 +1,11 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Match expression does not handle remaining value\\: string$#"
+			count: 1
+			path: src/Parser.php
+
+		-
+			message: "#^Unable to resolve the template type T in call to method Crell\\\\ArgParser\\\\Parser\\:\\:parse\\(\\)$#"
+			count: 2
+			path: tests/ParserTest.php

@@ -6,6 +6,10 @@ namespace Crell\ArgParser;
 
 class ArgNormalizer
 {
+    /**
+     * @param string[] $argv
+     * @return array<string, mixed>
+     */
     public function parseArgv(array $argv): array
     {
         $ret = [];
@@ -37,6 +41,12 @@ class ArgNormalizer
         return $ret;
     }
 
+    /**
+     * @param array<string, string|array<string>|true> $ret
+     * @param string $name
+     * @param mixed $value
+     * @return array<string, string|array<string>|true>
+     */
     private function updateResult(array $ret, string $name, mixed $value): array
     {
         if (isset($ret[$name])) {
@@ -51,6 +61,10 @@ class ArgNormalizer
         return $ret;
     }
 
+    /**
+     * @param string $value
+     * @return array{string, string|true}
+     */
     private function getNameValue(string $value): array
     {
         if (str_contains($value, '=')) {

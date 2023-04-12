@@ -20,5 +20,14 @@
             "Crell\\ArgParser\\": "tests",
             "Crell\\ArgParser\\Benchmarks\\": "benchmarks"
         }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "phpstan": "phpstan",
+        "coverage": "php -dextension=pcov.so -dpcov.enabled=1 vendor/bin/phpunit --coverage-text",
+        "all-checks": [
+            "phpunit",
+            "phpstan"
+        ]
     }
 }
