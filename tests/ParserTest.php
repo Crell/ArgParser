@@ -78,11 +78,15 @@ class ParserTest extends TestCase
             'class' => Typed::class,
             'expected' => new Typed(),
         ];
-        yield 'beep' => [
-//        yield 'callbacks are called' => [
+        yield 'callbacks are called' => [
             'argv' => ['script.php', '--a=3', '--b=4'],
             'class' => Callback::class,
             'expected' => new Callback(3, 4),
+        ];
+        yield 'extraneous values are ignored' => [
+            'argv' => ['script.php', 'someCommand', '--file=A', '--file=B'],
+            'class' => Multivalue::class,
+            'expected' => new Multivalue(['A', 'B']),
         ];
     }
 

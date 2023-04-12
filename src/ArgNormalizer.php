@@ -18,10 +18,6 @@ class ArgNormalizer
 
                 [$name, $value] = $this->getNameValue($entry);
 
-                // If the next arg exists and is not a new switch (denoted by -), assume it is a value for this argument.
-                //$value = !str_starts_with($argv[$i + 1] ?? '', '-') ? $argv[$i + 1] : null;
-                // $i++;
-
                 $ret = $this->updateResult($ret, $name, $value);
             } elseif (str_starts_with($argv[$i], '-')) {
                 // It's a short-form argument.
@@ -31,7 +27,9 @@ class ArgNormalizer
 
                 $ret = $this->updateResult($ret, $name, $value);
             } else {
-                // @todo Figure out what to do here.
+                // Anything that's not an explicit switch gets ignored.
+                // This is mostly so that we can have a "command" parameter first
+                // that gets handled separately.
             }
             $i++;
         }
